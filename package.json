@@ -1,16 +1,17 @@
 {
-  "name": "ultrason",
+  "name": "sounder",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ava tests/**/*.js --verbose",
     "start": "rollup -c"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "ava": "^0.21.0",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-latest": "^6.24.1",
     "chalk": "^2.0.1",
