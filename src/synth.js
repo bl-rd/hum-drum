@@ -26,14 +26,7 @@ export default class Synth {
      * @param {Number} time
      */
     trigger(note, pitch = 4) {
-        // this.initialise();
-
         let frequency = getNote(note, pitch);
         this.osc.frequency.value = frequency;
-        
-        // this.osc.start(time);
-        // hmmm
-        // this.osc.stop(time + 0.1);
-
     }
 }

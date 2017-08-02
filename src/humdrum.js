@@ -2,6 +2,7 @@
 
 import { baseFrequencies, getNote, getLevel } from './frequencies';
 import { Bass, Snare } from './drums';
+import Synth from './synth';
 
 /**
  * More accurate set version of setInterval
@@ -49,53 +50,113 @@ export class Interval {
 
 export class HumDrum {
 
+    /**
+     * 
+     * @param {Number} bpm The beats per minute (bpm) the track should play to...
+     */
     constructor(bpm) {
         this.bpm = bpm;
-        this.tracks = [];
+        this.synthTracks = new Map();
+        this.drumTracks = new Map();
+        this.play = false;
+        this.ticker = 0;
+        this.loop = 0;
+        this.context = new AudioContext();
+
+        // this should be worked out automatically
+        this.loopLength = 16;
     }
 
-    // addTrack(track) {
-    //     this.tracks.push(track);
-    //     this.tracks = [...new Set(this.tracks)];
-    //     return this;
-    // }
+    start() {
+        this.play = true;
+        this.drum();
+    }
 
-    // normaliseTracks() {
-    //     // this will make sure the tracks are the same length
-    //     return;
-    // }
+    stop() {
+        this.play = false;
+    }
 
-    // play() {
-    //     this.normaliseTracks();
-    //     this.tracks.map(track => this.playTrack(track));
-    // }
+    drum() {
+        if (!this.play) return;
+        const timer = new Interval(() => {
+            this.drumTracks.forEach(value => {
+                // was this.playTrack but javascript and `this`
+                let now = this.context.currentTime;
+                let playSnare = value.data.snare[this.ticker];
+                let playBass = value.data.bass[this.ticker];
+                if (playSnare) value.snare.trigger(now);
+                if (playBass) value.bass.trigger(now);
+            });
 
-    // listenForStop() {
-    //     document.addEventListener('keyup', e => {
-    //         if (e.keyCode === 32) {
-    //             // oscillator.stop();
-    //             console.log('stopped');
-    //         }
-    //     });
-    // }
+            this.synthTracks.forEach(value => {
+                if (this.loop >= value.start) {
+                    value.synth.trigger(
+                        value.notes[this.ticker], value.pitch);
+                }
+            });
+            
+            // increment the ticker
+            if (this.ticker >= this.loopLength - 1) {
+                // increment the loop
+                this.loop++;
+                this.ticker = 0;
+                // dispatch event
+            } else {
+                this.ticker++;
+            }
+        }, (60 / this.bpm) * 1000);
 
-    // playTrack(track) {
-    //     let audioCtx = new AudioContext();
-    //     let oscillator = audioCtx.createOscillator();
-    //     let gainNode = audioCtx.createGain();
-    //     oscillator.connect(gainNode);
-    //     gainNode.connect(audioCtx.destination);
+        timer.run();
+    }
 
-    //     let start = 0;
-    //     let note = 0;
-    //     oscillator.frequency.value = note;
-    //     oscillator.type = 'square';
-    //     oscillator.start();
+    playTrack(value, key, map) {
+        // do some logic to work out what type of track it is
+        // for now we are doing it manually
+        let now = this.context.currentTime;
+        let playSnare = value.data.snare[this.ticker];
+        let playBass = value.data.bass[this.ticker];
+        if (playSnare) value.snare.trigger(now);
+        if (playBass) value.bass.trigger(now);
+    }
 
-    //     setInterval(() => {
-    //         note = getNote(track[start], 4);
-    //         oscillator.frequency.value = note;
-    //         start = start === track.length - 1 ? 0 : start + 1;
-    //     }, (60 / this.bpm) * 1000);
-    // }
+    /**
+     * Adds a drum track
+     * @param {String} key 
+     * @param {Object} data 
+     * @param {Number} start 
+     * @param {Boolean} loop 
+     */
+    addDrumTrack(key, data, start, loop) {
+        let snare = new Snare(this.context);
+        let bass = new Bass(this.context);
+        let dataObj = {
+            data: data,
+            snare: snare,
+            bass: bass,
+            start, start,
+            loop: loop
+        };
+        this.drumTracks.set(key, dataObj);
+        return this;
+    }
+
+    /**
+     * 
+     * @param {String} key 
+     * @param {Array} data 
+     * @param {Number} start 
+     * @param {Boolean} loop
+     * @param {Number} pitch - @todo to be got from notation
+     */
+    addSynthTrack(key, data, start, loop, pitch) {
+        let synth = new Synth(this.context);
+        this.synthTracks.set(key, {
+            synth: synth,
+            notes: data,
+            start: start,
+            loop: loop,
+            pitch: pitch
+        });
+        return this;
+    }
 }
