@@ -23,7 +23,12 @@ let context = new AudioContext();
 let bass = new Bass(context);
 let snare = new Snare(context);
 let synth = new Synth(context);
+let synthnotes = ['', 'a', '', 'a', '', 'a', '', 'a', '', 'g', '', 'g', '', 'g', '', 'g']
+
+/** @todo this needs fixing... */
 const bpm = 300;
+/*******************************/
+
 let ticker = 0;
 let notes = ['a', 'g'];
 let note = notes[0];
@@ -34,11 +39,12 @@ const timer = new Interval(() => {
     let now = context.currentTime;
     if (playBass) bass.trigger(now);
     if (playSnare) snare.trigger(now);
-    synth.trigger(note, now);
+    synth.trigger(synthnotes[ticker]);
     ticker = ticker >= s.length - 1 ? 0 : ticker + 1;
 }, (60 / bpm) * 1000);
 timer.run();
 
 document.addEventListener('keydown', e => {
     note = note === notes[0] ? notes[1] : notes[0];
+    console.log(note);
 });
