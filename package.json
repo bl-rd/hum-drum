@@ -6,8 +6,8 @@
   "scripts": {
     "test": "ava tests/**/*.js --verbose",
     "start": "concurrently \"rollup -c -w\" \"hs -o -c-1\"",
-    "rollup": "rollup -c",
-    "install": "rollup -c"
+    "rollup": "rollup -c rollup.config.js && rollup -c rollup.config.web.js",
+    "install": "npm run rollup"
   },
   "keywords": [
     "webaudio",

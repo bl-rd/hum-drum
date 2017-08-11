@@ -48,7 +48,7 @@ class Interval {
 
 }
 
-export class HumDrum {
+export default class HumDrum {
 
     /**
      * 
