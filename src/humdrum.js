@@ -9,7 +9,7 @@ import Synth from './synth';
  * Based on https://gist.github.com/manast/1185904
  * @class Interval
  */
-export class Interval {
+class Interval {
 
     /**
      * @constructor
