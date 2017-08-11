@@ -2,9 +2,15 @@ import { HumDrum } from './humdrum';
 
 let s = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1];
 let b = [1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0];
+let h = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0];
+let m = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0];
+let l = [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1];
 let drumTrack = {
     snare: s,
-    bass: b
+    bass: b,
+    hiTom: h,
+    midTom: m,
+    lowTom: l
 };
 let midNotes = ['', 'a', '', 'a', '', 'a', '', 'a', '', 'g', '', 'g', '', 'g', '', 'g'];
 let bassNotes = ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g'];

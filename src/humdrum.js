@@ -1,7 +1,7 @@
 // `require` any node modules, `import` any custom modules (thanks rollup)
 
 import { baseFrequencies, getNote, getLevel } from './frequencies';
-import { Bass, Snare } from './drums';
+import { Bass, Snare, HiTom, MidTom, LowTom } from './drums';
 import Synth from './synth';
 
 /**
@@ -82,10 +82,17 @@ export class HumDrum {
             this.drumTracks.forEach(value => {
                 // was this.playTrack but javascript and `this`
                 let now = this.context.currentTime;
-                let playSnare = value.data.snare[this.ticker];
-                let playBass = value.data.bass[this.ticker];
+                let playSnare = this.shouldPlayDrum(value.data.snare, this.ticker);
+                let playBass = this.shouldPlayDrum(value.data.bass, this.ticker);
+                let playHiTom = this.shouldPlayDrum(value.data.hiTom, this.ticker);
+                let playMidTom = this.shouldPlayDrum(value.data.midTom, this.ticker);
+                let playLowTom = this.shouldPlayDrum(value.data.lowTom, this.ticker);
+
                 if (playSnare) value.snare.trigger(now);
                 if (playBass) value.bass.trigger(now);
+                if (playHiTom) value.hiTom.trigger(now);
+                if (playMidTom) value.midTom.trigger(now);
+                if (playLowTom) value.lowTom.trigger(now);
             });
 
             this.synthTracks.forEach(value => {
@@ -109,6 +116,20 @@ export class HumDrum {
         timer.run();
     }
 
+    /**
+     * 
+     * @param {*} value 
+     * @param {*} ticker 
+     * @return {Boolean}
+     */
+    shouldPlayDrum(value, ticker) {
+        if (!value) {
+            return false;
+        }
+
+        return value[ticker];
+    }
+
     playTrack(value, key, map) {
         // do some logic to work out what type of track it is
         // for now we are doing it manually
@@ -129,11 +150,18 @@ export class HumDrum {
     addDrumTrack(key, data, start, loop) {
         let snare = new Snare(this.context);
         let bass = new Bass(this.context);
+        let hiTom = new HiTom(this.context);
+        let midTom = new MidTom(this.context);
+        let lowTom = new LowTom(this.context);
+
         let dataObj = {
             data: data,
             snare: snare,
             bass: bass,
-            start, start,
+            hiTom: hiTom,
+            midTom: midTom,
+            lowTom: lowTom,
+            start: start,
             loop: loop
         };
         this.drumTracks.set(key, dataObj);

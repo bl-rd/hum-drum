@@ -31,6 +31,70 @@ class Bass {
     }
 }
 
+class HiTom extends Bass {
+
+    /**
+     * 
+     * @param {AudioContext} context 
+     */
+    constructor(context) {
+
+        super(context);
+
+        this.duration = 0.2;
+        this.rampVal = 0.001;
+        this.endVal = 900;
+    }
+
+    initialise() {
+        super.initialise();
+    }
+
+    trigger(time) {
+
+        this.initialise();
+        this.osc.frequency.setValueAtTime(this.endVal, time);
+        this.gain.gain.setValueAtTime(1, time);
+
+        this.osc.frequency.exponentialRampToValueAtTime(this.rampVal, time + this.duration);
+        this.gain.gain.exponentialRampToValueAtTime(this.rampVal, time + this.duration);
+
+        this.osc.start(time);
+        this.osc.stop(time + this.duration);
+
+    }
+}
+
+class MidTom extends HiTom {
+    constructor(context) {
+        super(context);
+        this.endVal = 400;
+    }
+
+    initialise() {
+        super.initialise();
+    }
+
+    trigger(time) {
+        super.trigger(time);
+    }
+}
+
+class LowTom extends HiTom {
+    constructor(context) {
+        super(context);
+        this.endVal = 200;
+    }
+
+    initialise() {
+        super.initialise();
+    }
+
+    trigger(time) {
+        super.trigger(time);
+    }
+}
+
 class Snare {
 
     /**
@@ -88,4 +152,4 @@ class Snare {
     }
 }
 
-export { Bass, Snare }
+export { Bass, Snare, HiTom, MidTom, LowTom }
