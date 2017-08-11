@@ -95,6 +95,60 @@ class LowTom extends HiTom {
     }
 }
 
+class HiHat {
+    /**
+     * Thanks to Joe Sullivan http://joesul.li/van/synthesizing-hi-hats/
+     * @param {AudioContext} context 
+     */
+    constructor(context) {
+        this.context = context;
+        this.fundamental = 40;
+        this.ratios = [2, 3, 4.16, 5.43, 6.79, 8.21];
+    }
+
+    initialise() {
+        this.gain = this.context.createGain();
+        
+        // bandpass
+        this.bandpass = this.context.createBiquadFilter();
+        this.bandpass.type = 'bandpass';
+        this.bandpass.frequency.value = 10000;
+
+        // highpass
+        this.highpass = this.context.createBiquadFilter();
+        this.highpass.type = 'highpass';
+        this.highpass.frequency.value = 7000;
+
+        // connect
+        this.bandpass.connect(this.highpass);
+        this.highpass.connect(this.gain);
+        this.gain.connect(this.context.destination);
+    }
+
+    trigger(time) {
+        this.initialise();
+
+        // define the volume envelope
+        this.gain.gain.setValueAtTime(0.00001, time);
+        this.gain.gain.exponentialRampToValueAtTime(1, time + 0.02);
+        this.gain.gain.exponentialRampToValueAtTime(0.3, time + 0.03);
+        this.gain.gain.exponentialRampToValueAtTime(0.00001, time + 0.3);
+
+        this.ratios.map(ratio => {
+            // create oscillator
+            let osc = this.context.createOscillator();
+            osc.type = 'square';
+
+            // frequency is the fundamental * this oscillator's ratio
+            osc.frequency.value = this.fundamental * ratio;
+            osc.connect(this.bandpass);
+            osc.start(time);
+            osc.stop(time + 0.3);
+        });
+
+    }
+}
+
 class Snare {
 
     /**
@@ -152,4 +206,4 @@ class Snare {
     }
 }
 
-export { Bass, Snare, HiTom, MidTom, LowTom }
+export { Bass, Snare, HiTom, MidTom, LowTom, HiHat }

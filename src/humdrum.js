@@ -1,7 +1,7 @@
 // `require` any node modules, `import` any custom modules (thanks rollup)
 
 import { baseFrequencies, getNote, getLevel } from './frequencies';
-import { Bass, Snare, HiTom, MidTom, LowTom } from './drums';
+import { Bass, Snare, HiTom, MidTom, LowTom, HiHat } from './drums';
 import Synth from './synth';
 
 /**
@@ -87,12 +87,14 @@ export class HumDrum {
                 let playHiTom = this.shouldPlayDrum(value.data.hiTom, this.ticker);
                 let playMidTom = this.shouldPlayDrum(value.data.midTom, this.ticker);
                 let playLowTom = this.shouldPlayDrum(value.data.lowTom, this.ticker);
+                let playHiHat = this.shouldPlayDrum(value.data.hiHat, this.ticker);
 
                 if (playSnare) value.snare.trigger(now);
                 if (playBass) value.bass.trigger(now);
                 if (playHiTom) value.hiTom.trigger(now);
                 if (playMidTom) value.midTom.trigger(now);
                 if (playLowTom) value.lowTom.trigger(now);
+                if (playHiHat) value.hiHat.trigger(now);
             });
 
             this.synthTracks.forEach(value => {
@@ -153,6 +155,7 @@ export class HumDrum {
         let hiTom = new HiTom(this.context);
         let midTom = new MidTom(this.context);
         let lowTom = new LowTom(this.context);
+        let hiHat = new HiHat(this.context);
 
         let dataObj = {
             data: data,
@@ -161,6 +164,7 @@ export class HumDrum {
             hiTom: hiTom,
             midTom: midTom,
             lowTom: lowTom,
+            hiHat: hiHat,
             start: start,
             loop: loop
         };
