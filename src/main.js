@@ -27,3 +27,10 @@ track
     .addSynthTrack('mid', midNotes, 0, true, 4)
     .addSynthTrack('high', highNotes, 4, true, 6)
     .start();
+
+document.addEventListener('keydown', e => {
+    if (track.isMuted('bass'))
+        track.muteTrack('bass');
+    else
+        track.unMuteTrack('bass');
+});

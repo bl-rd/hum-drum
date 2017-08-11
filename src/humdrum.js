@@ -69,18 +69,19 @@ export class HumDrum {
 
     start() {
         this.play = true;
-        this.drum();
+        this.go();
     }
 
     stop() {
         this.play = false;
     }
 
-    drum() {
+    go() {
         if (!this.play) return;
         const timer = new Interval(() => {
             this.drumTracks.forEach(value => {
                 // was this.playTrack but javascript and `this`
+                if (!value.play) return;
                 let now = this.context.currentTime;
                 let playSnare = this.shouldPlayDrum(value.data.snare, this.ticker);
                 let playBass = this.shouldPlayDrum(value.data.bass, this.ticker);
@@ -98,6 +99,11 @@ export class HumDrum {
             });
 
             this.synthTracks.forEach(value => {
+                if (!value.play) {
+                    value.synth.osc.frequency.value = 0;
+                    return;
+                }
+
                 if (this.loop >= value.start) {
                     value.synth.trigger(
                         value.notes[this.ticker], value.pitch);
@@ -112,6 +118,7 @@ export class HumDrum {
                 // dispatch event
             } else {
                 this.ticker++;
+                console.log(this.ticker);
             }
         }, (60 / this.bpm) * 1000);
 
@@ -132,24 +139,15 @@ export class HumDrum {
         return value[ticker];
     }
 
-    playTrack(value, key, map) {
-        // do some logic to work out what type of track it is
-        // for now we are doing it manually
-        let now = this.context.currentTime;
-        let playSnare = value.data.snare[this.ticker];
-        let playBass = value.data.bass[this.ticker];
-        if (playSnare) value.snare.trigger(now);
-        if (playBass) value.bass.trigger(now);
-    }
-
     /**
      * Adds a drum track
      * @param {String} key 
      * @param {Object} data 
      * @param {Number} start 
      * @param {Boolean} loop 
+     * @param {Boolean} play
      */
-    addDrumTrack(key, data, start, loop) {
+    addDrumTrack(key, data, start, loop, play = true) {
         let snare = new Snare(this.context);
         let bass = new Bass(this.context);
         let hiTom = new HiTom(this.context);
@@ -166,7 +164,8 @@ export class HumDrum {
             lowTom: lowTom,
             hiHat: hiHat,
             start: start,
-            loop: loop
+            loop: loop,
+            play: play
         };
         this.drumTracks.set(key, dataObj);
         return this;
@@ -179,16 +178,42 @@ export class HumDrum {
      * @param {Number} start 
      * @param {Boolean} loop
      * @param {Number} pitch - @todo to be got from notation
+     * @param {Boolean} play
      */
-    addSynthTrack(key, data, start, loop, pitch) {
+    addSynthTrack(key, data, start, loop, pitch, play = true) {
         let synth = new Synth(this.context);
         this.synthTracks.set(key, {
             synth: synth,
             notes: data,
             start: start,
             loop: loop,
-            pitch: pitch
+            pitch: pitch,
+            play: play
         });
         return this;
+    }
+
+    muteTrack(key) {
+        let track = this.getTrack(key);
+        if (track)
+            track.play = false;
+    }
+
+    unMuteTrack(key) {
+        let track = this.getTrack(key);
+        if (track)
+            track.play = true;
+    }
+
+    isMuted(key) {
+        let track = this.getTrack(key);
+        if (track) {
+            return track.play;
+        }
+        return null;
+    }
+
+    getTrack(key) {
+        return this.drumTracks.get(key) || this.synthTracks.get(key) || false;
     }
 }
