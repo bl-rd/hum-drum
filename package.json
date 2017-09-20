@@ -1,6 +1,6 @@
 {
   "name": "hum-drum",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "A small framework for playing music using the Web Audio API",
   "main": "index.js",
   "scripts": {
