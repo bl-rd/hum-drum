@@ -38,6 +38,7 @@ class Interval {
         }
 
         this.timer = setTimeout(() => this.run(), nextTick);
+
     }
 
     stop() {
@@ -54,7 +55,7 @@ export default class HumDrum {
      * 
      * @param {Number} bpm The beats per minute (bpm) the track should play to...
      */
-    constructor(bpm) {
+    constructor(bpm, loopLength) {
         this.bpm = bpm;
         this.synthTracks = new Map();
         this.drumTracks = new Map();
@@ -64,7 +65,25 @@ export default class HumDrum {
         this.context = new AudioContext();
 
         // this should be worked out automatically
-        this.loopLength = 16;
+        this.loopLength = loopLength || 16;
+
+        // this '8' is a problem - needs to be modified depending on the loopLength
+        this.timeBetweenTicks = (60 / this.bpm) * 1000 / (this.loopLength / 4);
+
+        this.started = false;
+        this.createEvents();
+    }
+
+    createEvents() {
+        this.events = [];
+        for (let i = 0; i < this.loopLength; i++) {
+            let e = new CustomEvent('humdrumTick', {
+                detail: {
+                    tick: i
+                }
+            });
+            this.events.push(e);
+        }
     }
 
     start() {
@@ -76,8 +95,41 @@ export default class HumDrum {
         this.play = false;
     }
 
+    dispatchStartEvent() {
+        if (!this.started) {
+            let ev = new Event('humdrumStart', {});
+            setTimeout(() => window.dispatchEvent(ev), 0);
+        }
+        this.started = true;
+    }
+
+    /**
+     * 
+     * @param {Number} point 
+     */
+    timeToTick(point) {
+        let now = this.context.currentTime;
+        
+        let diff;
+        if (point > this.ticker) {
+            // only handle going up for now
+            diff = point - this.ticker;
+        } else if (point < this.ticker) {
+            diff = this.ticker + point;
+        } else {
+            // return now;
+        }
+
+        return now + (diff * this.timeBetweenTicks);
+    }
+
+    getCurrentTime() {
+        return this.context.currentTime;
+    }
+
     go() {
         if (!this.play) return;
+        this.dispatchStartEvent();
         const timer = new Interval(() => {
             this.drumTracks.forEach(value => {
                 // was this.playTrack but javascript and `this`
@@ -114,13 +166,14 @@ export default class HumDrum {
             if (this.ticker >= this.loopLength - 1) {
                 // increment the loop
                 this.loop++;
+                // reset the ticker
                 this.ticker = 0;
-                // dispatch event
             } else {
-                this.ticker++;
-                console.log(this.ticker);
+                this.ticker++;                
             }
-        }, (60 / this.bpm) * 1000);
+            // dispatch event
+            window.dispatchEvent(this.events[this.ticker]);
+        }, this.timeBetweenTicks);//(60 / this.bpm) * 1000 / (this.loopLength / 4));
 
         timer.run();
     }
@@ -197,12 +250,14 @@ export default class HumDrum {
         let track = this.getTrack(key);
         if (track)
             track.play = false;
+        return this;
     }
 
     unMuteTrack(key) {
         let track = this.getTrack(key);
         if (track)
             track.play = true;
+        return this;
     }
 
     isMuted(key) {

@@ -15,7 +15,7 @@ export default class Synth {
         this.osc.type = 'square';
         this.osc.frequency.value = 0;
         this.gain = this.context.createGain();
-        this.gain.gain.value = 0.05;
+        this.gain.gain.value = 0.1;
         this.osc.connect(this.gain);
         this.gain.connect(this.context.destination);
         this.osc.start();
